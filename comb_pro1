@@ -1,0 +1,66 @@
+import numpy as np
+from sklearn.model_selection import KFold
+from pandas import DataFrame, read_csv
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+import sklearn
+import xlsxwriter
+
+file = 'data1.csv'
+df = pd.read_csv(file)
+
+Z = df.loc[: ,"AGE":"TMT"]
+R=df.loc[: ,"FGF23":"MAP-C2_INDEX"]
+Z=Z.join(R)
+y = df.loc[: ,"ANGIOGRAM_REPORT"]
+kf = KFold(n_splits=5,shuffle=True)
+predictions=np.zeros(700)
+acc=np.zeros(10)
+a=[]
+b=[]
+first_col=[]
+second_col=[]
+
+for i in range(len(Z.columns)):
+    j=i+1          
+    while (j<(len(Z.columns))):
+        
+        feature=Z.iloc[:,i:i+1]
+        first_col=np.append(first_col,feature.columns)
+        s=Z.iloc[:,j:j+1]
+        second_col=np.append(second_col,s.columns)
+        
+        feature=feature.join(s)
+        print(feature)
+        for train_index, test_index in kf.split(feature):
+                   Z_train, Z_test = np.array(feature)[train_index],np.array( feature)[test_index]
+                   y_train, y_test = np.array(y)[train_index], np.array(y)[test_index]
+
+                   classifier=RandomForestClassifier(n_estimators=100)
+                   for m in range(10):
+                       classifier.fit(Z_train,y_train)
+                       predictions=classifier.predict(Z_test)
+                       acc[m]=sklearn.metrics.accuracy_score(y_test,predictions)
+                
+                   
+                   a=np.append(a,acc)
+        k=a.mean()
+        b=np.append(b,k)
+        j=j+1
+print(len(b))           
+print("accuracy mean of all columns: ",b)    
+
+comb_headers=np.column_stack((first_col,second_col,b))
+print(comb_headers)
+comb_sorted_acc=sorted(comb_headers,key=lambda comb_headers:comb_headers[2])
+workbook = xlsxwriter.Workbook('comb_sorted_acc.xlsx')
+worksheet = workbook.add_worksheet()
+row = 0
+col=0
+for header1,header2, data in (comb_sorted_acc):
+    worksheet.write(row, col, header1)
+    worksheet.write(row, col+1, header2)
+    worksheet.write(row, col+2, data)
+    row=row+1
+workbook.close()

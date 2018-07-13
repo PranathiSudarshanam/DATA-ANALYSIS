@@ -1,0 +1,65 @@
+import numpy as np
+from sklearn.model_selection import KFold
+from pandas import DataFrame, read_csv
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+import sklearn
+import xlsxwriter
+from sklearn.metrics import precision_recall_curve
+import matplotlib.pyplot as plt
+from sklearn import svm
+
+
+file = 'data1.csv'
+df = pd.read_csv(file)
+
+Z = df.loc[: ,"AGE":"TMT"]
+R=df.loc[: ,"FGF23":'MAP-C2_INDEX']
+Z=Z.join(R)
+y = df.loc[: ,"ANGIOGRAM_REPORT"]
+first_col=[]
+second_col=[]
+corr=Z.corr()
+print(corr)
+
+i=0
+j=0
+k=0
+c1=np.zeros(2926)
+c=corr.values
+print(len(c))
+for i in range(77):
+    j=i+1
+    while(j<77):
+        c1[k]=c[i][j]
+        k=k+1
+        j=j+1
+print(len(c1))
+print(c1)
+i=0
+j=0
+for i in range(77):
+    j=i+1          
+    while (j<77):
+        
+        feature=Z.iloc[:,i:i+1]
+        first_col=np.append(first_col,feature.columns)
+        s=Z.iloc[:,j:j+1]
+        #print((first_col))
+        second_col=np.append(second_col,s.columns)
+        j=j+1
+
+print(len(first_col))
+comb_headers=np.column_stack((first_col,second_col,c1))
+comb_sorted_acc=sorted(comb_headers,key=lambda comb_headers:comb_headers[2])
+workbook = xlsxwriter.Workbook('corr_coeff.xlsx')
+worksheet = workbook.add_worksheet()
+row = 0
+col=0
+for header1,header2, data in (comb_sorted_acc):
+    worksheet.write(row, col, header1)
+    worksheet.write(row, col+1, header2)
+    worksheet.write(row, col+2, data)
+    row=row+1
+workbook.close()

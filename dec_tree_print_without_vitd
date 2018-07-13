@@ -1,0 +1,62 @@
+import numpy as np
+from sklearn.externals.six import StringIO
+from sklearn.model_selection import KFold
+from pandas import DataFrame, read_csv
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+import sklearn
+from sklearn.metrics import precision_recall_curve
+import matplotlib.pyplot as plt
+from sklearn import tree
+import pydot
+
+file = 'data1.csv'
+df = pd.read_csv(file)
+Z1 = df[['IHD']]
+Z2=df[['HDL']]
+Z=Z1.join(Z2)
+Z4=df[['PWV']]
+Z=Z.join(Z4)
+Z5=df[['CALCIUM']]
+Z=Z.join(Z5)
+Z6=df[['RR_MIN']]
+Z=Z.join(Z6)
+Z7=df[['FGF23.1']]
+Z=Z.join(Z7)
+Z8=df[['INSULIN']]
+Z=Z.join(Z8)
+Z9=df[['TC']]
+Z=Z.join(Z9)
+Z10=df[['FGF23']]
+Z=Z.join(Z10)
+Z11=df[['MAP-C2_INDEX']]
+Z=Z.join(Z11)
+Z12=df[['EXERT_ANGINA']]
+Z=Z.join(Z12)
+Z13=df[['TMT+']]
+Z=Z.join(Z13)
+Z14=df[['AUGMENTATION_INDEX']]
+Z=Z.join(Z14)
+Z15=df[['REFLECTION_MANITUDE']]
+Z=Z.join(Z15)
+Z16=df[['ANT_WALL_MI']]
+Z=Z.join(Z16)
+Z17=df[['UNSTABLE_ANGINA']]
+Z=Z.join(Z17)
+Z18=df[['CARDIAC_INDEX']]
+Z=Z.join(Z18)
+Z19=df[['AUGMENTATION_PRESSURE']]
+Z=Z.join(Z19)
+
+y = df.loc[: ,"ANGIOGRAM_REPORT"]
+clf = tree.DecisionTreeClassifier(max_depth=2)
+clf = clf.fit(Z,y)
+dot_data = StringIO()
+tree.export_graphviz(clf, out_file=dot_data,max_depth=2,feature_names=Z.columns,filled=True,rounded=True) 
+graph = pydot.graph_from_dot_data(dot_data.getvalue())  
+graph[0].write_pdf("dec_tree_with_20_features_without_VIT_D.pdf")
+
+
+    
+

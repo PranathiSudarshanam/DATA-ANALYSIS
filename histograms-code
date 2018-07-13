@@ -1,0 +1,36 @@
+import numpy as np
+from sklearn.model_selection import KFold
+from pandas import DataFrame, read_csv
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+import sklearn
+import xlsxwriter
+from sklearn.metrics import precision_recall_curve
+import matplotlib.pyplot as plt
+
+file = 'data1.csv'
+df = pd.read_csv(file)
+Z1 = df[['VIT_D']]
+Z2=df[['CALCIUM']]
+Z=Z1.join(Z2)
+Z3= df[['IHD']]
+Z=Z.join(Z3)
+Z4=df[['PWV']]
+Z=Z.join(Z4)
+Z5=df[['RR_MIN']]
+Z=Z.join(Z5)
+Z6=df[['INSULIN']]
+Z=Z.join(Z6)
+print(Z)
+p=1
+for i in range(len(Z.columns)):          
+        feature1=Z.iloc[:,i:i+1]
+        x0=feature1.iloc[0:35,:]
+        y0=feature1.iloc[35:70,:]
+        plt.figure(p)
+        plt.hist((x0,y0))
+        plt.xlabel(feature1.columns[0])
+        plt.legend(('True','False'))
+        p=p+1
+        plt.show()

@@ -1,0 +1,90 @@
+import numpy as np
+from sklearn.model_selection import KFold
+from pandas import DataFrame, read_csv
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+import sklearn
+import xlsxwriter
+from sklearn.metrics import precision_recall_curve
+import matplotlib.pyplot as plt
+from sklearn import svm
+
+
+file = 'data1.csv'
+df = pd.read_csv(file)
+Z=df[['AUGMENTATION_PRESSURE']]
+d1=df[['IHD']]
+Z=Z.join(d1)
+d1=df[['VIT_D']]
+Z=Z.join(d1)
+d1=df[['HDL']]
+Z=Z.join(d1)
+d1=df[['PWV']]
+Z=Z.join(d1)
+d1=df[['UNSTABLE_ANGINA']]
+Z=Z.join(d1)
+d1=df[['MAP-C2_INDEX']]
+Z=Z.join(d1)
+d1=df[['RR_MIN']]
+Z=Z.join(d1)
+d1=df[['CALCIUM']]
+Z=Z.join(d1)
+d1=df[['INSULIN']]
+Z=Z.join(d1)
+d1=df[['TC']]
+Z=Z.join(d1)
+d1=df[['REFLECTION_MANITUDE']]
+Z=Z.join(d1)
+d1=df[['FGF23']]
+Z=Z.join(d1)
+d1=df[['FGF23.1']]
+Z=Z.join(d1)
+y = df.loc[: ,"ANGIOGRAM_REPORT"]
+
+
+classifier=svm.LinearSVC()
+w=classifier.fit(Z,y)
+c1=w.coef_
+#print(c1[0])
+c1=c1[0]
+
+for j in range(13):
+      if (c1[j]<1e-03)&(c1[j]>-1e-03):
+           c1[j]=0
+#print(c1)
+c2=np.array(c1)
+#print(c2)
+
+n=np.column_stack((Z.columns,c2))
+l=sorted(n, key=lambda x:x[1])
+workbook = xlsxwriter.Workbook('weights_SVM_14 BEST_WITHOUT_VITD.xlsx')
+worksheet = workbook.add_worksheet()
+row = 0
+col = 0
+for item,cost in (l):
+    worksheet.write(row, col,     item)
+    worksheet.write(row,col+1,cost)
+    row += 1
+
+workbook.close()
+
+sum=np.zeros(70)
+z_arr=Z.values
+for i in range(70):
+    for j in range(13):
+        sum[i]=sum[i]+ z_arr[i][j]*c1[j]
+        j=j+1
+    i=i+1
+#print((sum))
+x0=sum[0:35]
+y0=sum[35:70]
+plt.hist((x0,y0))
+plt.legend(('True','False'))
+plt.show()
+
+
+
+   
+
+   
