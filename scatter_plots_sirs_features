@@ -1,0 +1,54 @@
+import numpy as np
+from sklearn.model_selection import KFold
+from pandas import DataFrame, read_csv
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+import sklearn
+import xlsxwriter
+from sklearn.metrics import precision_recall_curve
+import matplotlib.pyplot as plt
+
+file = 'data1.csv'
+df = pd.read_csv(file)
+Z1 = df[['VIT_D']]
+Z2=df[['CALCIUM']]
+Z=Z1.join(Z2)
+Z3= df[['PWV']]
+Z=Z.join(Z3)
+Z4=df[['LDL']]
+Z=Z.join(Z4)
+Z5=df[['IHD']]
+Z=Z.join(Z5)
+Z6=df[['HDL']]
+Z=Z.join(Z6)
+Z7=df[['FGF23']]
+Z=Z.join(Z7)
+Z8=df[['FGF23.1']]
+Z=Z.join(Z8)
+Z9=df[['INSULIN']]
+Z=Z.join(Z9)
+Z10=df[['TC']]
+Z=Z.join(Z10)
+print(Z)
+i=0
+y = df.loc[: ,"ANGIOGRAM_REPORT"]
+for i in range(10):
+    j=i+1
+    while(j<10):
+        s1=Z.iloc[0:35,i:i+1]
+        r1=Z.iloc[0:35,j:j+1]
+        #print(s1)
+        #print(r1)
+        
+        plt.scatter(s1,r1,marker='*',c='r',label='output=1')
+        s0=Z.iloc[35:70,i:i+1]
+        r0=Z.iloc[35:70,j:j+1]
+        #print(s0)
+        #print(r0)
+        plt.scatter(s0,r0,marker='*',c='g',label='output=0')
+        j+=1
+        plt.xlabel(s1.columns[0])
+        plt.ylabel(r1.columns[0])
+        plt.legend()
+        plt.show()   

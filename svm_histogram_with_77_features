@@ -1,0 +1,71 @@
+import numpy as np
+from sklearn.model_selection import KFold
+from pandas import DataFrame, read_csv
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+import sklearn
+import xlsxwriter
+from sklearn.metrics import precision_recall_curve
+import matplotlib.pyplot as plt
+from sklearn import svm
+
+
+file = 'data1.csv'
+df = pd.read_csv(file)
+
+Z = df.loc[: ,"AGE":"TMT"]
+R=df.loc[: ,"FGF23":'MAP-C2_INDEX']
+Z=Z.join(R)
+y = df.loc[: ,"ANGIOGRAM_REPORT"]
+
+classifier=svm.LinearSVC()
+w=classifier.fit(Z,y)
+c1=w.coef_
+#print(c1[0])
+c1=c1[0]
+for j in range(76):
+       if (c1[j]<1e-03)&(c1[j]>-1e-03):
+           c1[j]=0
+c2=np.array(c1)
+
+n=np.column_stack((Z.columns,c2))
+l=sorted(n, key=lambda x:x[1])
+
+
+
+workbook = xlsxwriter.Workbook('weights_SVM_with_VITD.xlsx')
+worksheet = workbook.add_worksheet()
+row = 0
+col = 0
+for item,cost in (l):
+    worksheet.write(row, col,     item)
+    worksheet.write(row,col+1,cost)
+    row += 1
+
+workbook.close()
+
+sum=np.zeros(70)
+z_arr=Z.values
+for i in range(70):
+    for j in range(76):
+        sum[i]=sum[i]+ z_arr[i][j]*c1[j]
+        j=j+1
+    i=i+1
+#print((sum))
+x0=sum[0:35]
+y0=sum[35:70]
+plt.hist((x0,y0))
+plt.legend(('True','False'))
+plt.show()
+
+workbook = xlsxwriter.Workbook('agg_weight_Samples_77_with_vitd.xlsx')
+worksheet = workbook.add_worksheet()
+row = 0
+col = 0
+for item in (sum):
+    worksheet.write(row, col,item)
+    row+=1
+workbook.close()
+
+   
