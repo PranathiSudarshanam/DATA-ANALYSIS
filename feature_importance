@@ -1,0 +1,47 @@
+import numpy as np
+from sklearn.model_selection import KFold
+from pandas import DataFrame, read_csv
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+import sklearn
+from sklearn.metrics import precision_recall_curve
+import matplotlib.pyplot as plt
+
+file = 'data1.csv'
+df = pd.read_csv(file)
+Z = df.loc[: ,"AGE":"TMT"]
+R=df.loc[: ,"FGF23":"MAP-C2_INDEX"]
+Z=Z.join(R)
+headers=Z.columns
+y = df.loc[: ,"ANGIOGRAM_REPORT"]
+kf = KFold(n_splits=5,shuffle=True)
+imp=np.zeros(77)
+imp1=np.zeros(77)
+for train_index, test_index in kf.split(Z):
+   Z_train, Z_test = np.array(Z)[train_index],np.array( Z)[test_index]
+   y_train, y_test = np.array(y)[train_index], np.array(y)[test_index]
+   classifier=RandomForestClassifier(n_estimators=100)
+   for i in range(10):
+       classifier.fit(Z_train,y_train)
+       predictions=classifier.predict(Z_test)
+       r=classifier.feature_importances_
+       imp=imp+r
+   imp1=imp1+imp
+   imp1=imp1/50
+
+d=np.column_stack((headers,imp1))
+e=sorted(d,key=lambda d:d[1])
+
+
+import xlsxwriter
+workbook = xlsxwriter.Workbook('feature_importances.xlsx')
+worksheet = workbook.add_worksheet()
+row = 0
+col=0
+for header, data in (e):
+    worksheet.write(row, col, header)
+    worksheet.write(row, col+1, data)
+    row=row+1
+workbook.close()
+
